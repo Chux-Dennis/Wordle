@@ -117,11 +117,11 @@ const Hero = () => {
               </h1>
             </div>
           ) : (
-            <div className="text-white font-bold font-Space">
-              <h1 className="font-bold xs:text-[2.8rem] ss:text-[4rem] flex items-center gap-4">
+            <div className="text-white font-bold font-Space mx-3">
+              <h1 className="font-bold xs:text-[2.3rem] ss:text-[4rem] flex items-center gap-4">
                 SPOT THE GREEN
               </h1>
-              <h1 className="font-bold xs:text-[2.8rem] ss:text-[4rem] flex items-center gap-4">
+              <h1 className="font-bold xs:text-[2.3rem] ss:text-[4rem] flex items-center gap-4">
                 CRACK THE CODE
               </h1>
             </div>
