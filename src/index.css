@@ -49,3 +49,49 @@
     background-color: #787c7e;
     /* Wrong letter */
 }
+
+
+
+
+
+  h1,
+  h2 {
+      text-align: center;
+  }
+
+  ul {
+      padding-left: 20px;
+  }
+
+  .example {
+      display: flex;
+      gap: 5px;
+      margin: 10px 0;
+  }
+
+  .box {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      border-radius: 5px;
+  }
+
+  .green {
+      background-color: #6aaa64;
+  }
+
+  /* Correct position */
+  .yellow {
+      background-color: #c9b458;
+  }
+
+  /* Wrong position */
+  .gray {
+      background-color: #787c7e;
+  }
+
+  /* Not in the word */
