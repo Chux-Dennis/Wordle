@@ -68,7 +68,7 @@ const Hero = () => {
 
   return (
     <Theme>
-      <div className="flex justify-center mt-12">
+      <div className="flex justify-center mt-12 mx-3">
         <div className="flex flex-col">
           {/* Conditionally render based on screen width */}
           {screenWidthWiderThan(620) ? (

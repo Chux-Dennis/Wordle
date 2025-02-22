@@ -7,10 +7,10 @@ const Navigation = () => {
   
   return (
     <>
-      <nav className="text-white mx-4 p-8 flex justify-between items-center">
-        <div className="logo-pair flex items-center gap-4">
+      <nav className="text-white mx-3 p-8 flex justify-between items-center">
+        <div className="logo-pair flex items-center  gap-4">
           <img src={Image} alt="" width={"50px"} />
-          <h1 className="font-sf  text-white font-bold">WORDLE.</h1>
+          <h1 className="font-sf xs:hidden ss:block text-white font-bold">WORDLE.</h1>
         </div>
 
         {/* <div className="circular-container flex -ml-[50px] w-[350px] bg-white gap-4 md:flex xs:hidden text-black font-sf p-4 rounded-full justify-center items-center">
