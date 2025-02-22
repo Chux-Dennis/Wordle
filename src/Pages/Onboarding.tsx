@@ -15,6 +15,8 @@ const Onboarding = () => {
           <Navigation />
           <Hero />
 
+
+        {/* Add Image to hero */}
           <div className="absolute bottom-5 right-5">
             <a href={pixelLink} target="_blank">
               <img src={Image} alt="" width="60px" />
