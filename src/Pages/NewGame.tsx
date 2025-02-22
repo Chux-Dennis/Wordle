@@ -8,20 +8,25 @@ const Endpoint = import.meta.env.VITE_ENDPOINT;
 const NewPage = () => {
   const [ellipsis, setEllipsis] = useState("");
   const [wordToBeGuessed, setWordToBeGuessed] = useState<string>("");
-
-  // Function to fetch word
-  const fetchGameWord = async () => {
-    try {
-      const response = await axios.get(Endpoint);
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const [fetchSuccesful,setFetchSuccesful] = useState<boolean>(false)
 
   // Function to get a random word out ot of all words
   const getRandomWordIndex = (numberOfWords: number): number => {
     return Math.floor(Math.random() * numberOfWords);
+  };
+  // Function to fetch word
+  const fetchGameWord = async () => {
+    try {
+      const response = await axios.get(Endpoint);
+      const randomWord =
+        response.data[getRandomWordIndex(response.data.length)].word;
+      setWordToBeGuessed(randomWord);
+      setTimeout(() => {
+        setFetchSuccesful(true);
+      },4500)
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -39,36 +44,43 @@ const NewPage = () => {
 
   useEffect(() => {
     ///Fetch word
-    // fetchGameWord();
+    fetchGameWord();
   }, []);
 
   return (
-    <div className="relative h-screen">
-      <div className="flex h-screen flex-col justify-center items-center">
-        {/* Animated Image */}
-        <motion.img
-          src={Image}
-          alt="Loading Logo"
-          initial={{ opacity: 0, scale: 0.5 }} // Initial state
-          animate={{ opacity: 1, scale: 1 }} // Animate to this state
-          transition={{ duration: 1, ease: "easeInOut" }} // Animation duration and easing
-        />
+    <>
+      {fetchSuccesful ? (
+        <>{wordToBeGuessed && <Gameplay word={wordToBeGuessed} />}</>
+      ) : (
+        <div className="relative h-screen">
+          <div className="flex h-screen flex-col justify-center items-center">
+            {/* Animated Image */}
+            <motion.img
+              src={Image}
+              alt="Loading Logo"
+              initial={{ opacity: 0, scale: 0.5 }} // Initial state
+              animate={{ opacity: 1, scale: 1 }} // Animate to this state
+              transition={{ duration: 1, ease: "easeInOut" }} // Animation duration and easing
+            />
 
-        {/* Loading Text with Ellipsis Animation */}
-        <motion.p
-          className="font-sf text-white font-bold text-[1.7rem] mt-4"
-          initial={{ opacity: 0, y: 20 }} // Initial state
-          animate={{ opacity: 1, y: 0 }} // Animate to this state
-          transition={{ delay: 0.5, duration: 1, ease: "easeInOut" }} // Animation delay, duration, and easing
-        >
-          Hold on, while we get the right word for you{ellipsis}
-        </motion.p>
-      </div>
-      <Gameplay />
-      {/* Background Gradient */}
-      <div className="absolute h-full inset-0 -z-10 w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#4978ce_100%)]"></div>
-    </div>
+            {/* Loading Text with Ellipsis Animation */}
+            <motion.p
+              className="font-sf text-white font-bold xs:text-[1.1rem] ss:text-[1.7rem] mt-4"
+              initial={{ opacity: 0, y: 20 }} // Initial state
+              animate={{ opacity: 1, y: 0 }} // Animate to this state
+              transition={{ delay: 0.5, duration: 1, ease: "easeInOut" }} // Animation delay, duration, and easing
+            >
+              Hold on, while we get the right word for you{ellipsis}
+            </motion.p>
+          </div>
+
+          {/* Background Gradient */}
+          <div className="absolute h-full inset-0 -z-10 w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#4978ce_100%)]"></div>
+        </div>
+      )}
+    </>
   );
 };
 
-export default NewPage;
+
+export default NewPage
