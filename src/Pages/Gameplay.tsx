@@ -25,8 +25,22 @@ const GamePlay = ({ word }: IComponentProps) => {
   const [loadingHint, setLoadingHint] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
 
+  // State to store the screen width
+  const [screenWidth, setScreenWidth] = useState<number>(window.innerWidth);
+
   const gameAudioRef = useRef<HTMLAudioElement | null>(null);
   const successAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Function to check if the screen width is wider than a given limit
+  const screenWidthWiderThan = (widthLimit: number): boolean => {
+    return screenWidth > widthLimit;
+  };
+
+  useEffect(() => {
+    const updateScreenWidth = () => setScreenWidth(window.innerWidth);
+    window.addEventListener("resize", updateScreenWidth);
+    return () => window.removeEventListener("resize", updateScreenWidth);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -190,13 +204,16 @@ const GamePlay = ({ word }: IComponentProps) => {
         ))}
 
         <div className="flex justify-center gap-1">
-          <motion.button
-            className="bg-blue-600 px-6 py-2 rounded-md text-lg font-bold text-white"
-            onClick={handleEnter}
-            whileTap={{ scale: 0.9 }}
-          >
-            Enter
-          </motion.button>
+          {/* Remove this button on mobile view */}
+          {screenWidthWiderThan(600) === true && (
+            <motion.button
+              className="bg-blue-600 px-6 py-2 rounded-md text-lg font-bold text-white"
+              onClick={handleEnter}
+              whileTap={{ scale: 0.9 }}
+            >
+              Enter
+            </motion.button>
+          )}
 
           {"ZXCVBNM".split("").map((letter) => (
             <motion.button
@@ -209,13 +226,16 @@ const GamePlay = ({ word }: IComponentProps) => {
             </motion.button>
           ))}
 
-          <motion.button
-            className="bg-red-600 px-6 py-2 rounded-md text-lg font-bold text-white"
-            onClick={handleBackspace}
-            whileTap={{ scale: 0.9 }}
-          >
-            ⌫
-          </motion.button>
+          {/* Remove this button on mobile view */}
+          {screenWidthWiderThan(600) === true && (
+            <motion.button
+              className="bg-red-600 px-6 py-2 rounded-md text-lg font-bold text-white"
+              onClick={handleBackspace}
+              whileTap={{ scale: 0.9 }}
+            >
+              ⌫
+            </motion.button>
+          )}
 
           <Modal
             title="AI Assistance"
@@ -231,6 +251,26 @@ const GamePlay = ({ word }: IComponentProps) => {
           </Modal>
         </div>
       </div>
+
+      {/* Adding this buttons on  a new line if it is on mobile view */}
+      {screenWidthWiderThan(600) === false && (
+        <div className="flex mt-3 gap-2">
+          <motion.button
+            className="bg-blue-600 px-6 py-2 rounded-md text-lg font-bold text-white"
+            onClick={handleEnter}
+            whileTap={{ scale: 0.9 }}
+          >
+            Enter
+          </motion.button>
+          <motion.button
+            className="bg-red-600 px-6 py-2 rounded-md text-lg font-bold text-white"
+            onClick={handleBackspace}
+            whileTap={{ scale: 0.9 }}
+          >
+            ⌫
+          </motion.button>
+        </div>
+      )}
     </motion.div>
   );
 };
