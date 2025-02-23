@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import helper from "../helper";
 import Image from "../assets/image/logo.png";
 import { Tooltip, Modal, Spin } from "antd";
-import { Volume2, VolumeX, Stars } from "lucide-react";
+import { Volume2, VolumeX, Stars, LucideMenu } from "lucide-react";
 
 // Import audio files
 import successSound from "../assets/audio/success-sound.mp3";
@@ -12,6 +12,51 @@ import gamePlaySound from "../assets/audio/drum-loop.mp3";
 interface IComponentProps {
   word: string;
 }
+
+interface SlideMenuProps {
+  buttons: React.ReactNode[];
+}
+
+const SlideMenu = ({ buttons }: SlideMenuProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <motion.div
+      className="flex items-center bg-gray-700 gap-4 p-4 rounded-md font-sf overflow-hidden"
+      animate={{ width: isOpen ? "180px" : "50px" }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+    >
+      <button onClick={() => setIsOpen((prev) => !prev)}>
+        <LucideMenu />
+      </button>
+
+      {/* AnimatePresence ensures smooth removal when isOpen is false */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="flex gap-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {buttons.map((btn, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                {btn}
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
 
 const GamePlay = ({ word }: IComponentProps) => {
   const targetWord = word.toUpperCase();
@@ -133,35 +178,68 @@ const GamePlay = ({ word }: IComponentProps) => {
       <audio ref={gameAudioRef} src={gamePlaySound} />
       <audio ref={successAudioRef} src={successSound} />
 
-      <Tooltip title="Control Sound">
-        <button
-          onClick={toggleSound}
-          className="absolute top-5 right-5 bg-gray-800 p-2 rounded-md hover:bg-gray-700"
-        >
-          {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-        </button>
-      </Tooltip>
+      {screenWidthWiderThan(600) === true && (
+        <>
+          <Tooltip title="Control Sound">
+            <button
+              onClick={toggleSound}
+              className="absolute top-5 right-5 bg-gray-800 p-2 rounded-md hover:bg-gray-700"
+            >
+              {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            </button>
+          </Tooltip>
 
-      <Tooltip title={hintUsed ? "Hint already used" : "Ask AI for help"}>
-        <motion.button
-          onClick={openHintModal}
-          disabled={hintUsed}
-          initial={{ scale: 1 }}
-          animate={hintUsed ? {} : { scale: [1, 1.1, 1] }}
-          transition={{ duration: 1, repeat: Infinity }}
-          className={`absolute top-[5rem] right-5 p-2 rounded-md ${
-            hintUsed
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-gray-800 hover:bg-gray-700"
-          }`}
-        >
-          <Stars size={24} />
-        </motion.button>
-      </Tooltip>
+          <Tooltip title={hintUsed ? "Hint already used" : "Ask AI for help"}>
+            <motion.button
+              onClick={openHintModal}
+              disabled={hintUsed}
+              initial={{ scale: 1 }}
+              animate={hintUsed ? {} : { scale: [1, 1.1, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className={`absolute top-[5rem] right-5 p-2 rounded-md ${
+                hintUsed
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-gray-800 hover:bg-gray-700"
+              }`}
+            >
+              <Stars size={24} />
+            </motion.button>
+          </Tooltip>
+        </>
+      )}
 
-      <button className="absolute top-5 left-5 p-2 rounded-md">
-        <img src={Image} alt="" width={"35px"} />
-      </button>
+      {screenWidthWiderThan(600) === false ? (
+        <div className="fixed top-5 left-5 mb-3">
+          <SlideMenu
+            buttons={[
+              <motion.button
+                onClick={openHintModal}
+                disabled={hintUsed}
+                initial={{ scale: 1 }}
+                animate={hintUsed ? {} : { scale: [1, 1.1, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className={`p-2 rounded-md ${
+                  hintUsed
+                    ? "bg-gray-600 cursor-not-allowed"
+                    : "bg-gray-800 hover:bg-gray-700"
+                }`}
+              >
+                <Stars size={24} />
+              </motion.button>,
+              <button
+                onClick={toggleSound}
+                className="  bg-gray-800 p-2 rounded-md hover:bg-gray-700"
+              >
+                {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+              </button>,
+            ]}
+          />
+        </div>
+      ) : (
+        <div className="fixed top-5 left-5">
+          <img src={Image} alt="" width={"35px"} />
+        </div>
+      )}
 
       <div className="grid grid-rows-6 gap-2">
         {guesses.map((guess, rowIndex) => (
@@ -195,7 +273,7 @@ const GamePlay = ({ word }: IComponentProps) => {
                 key={letter}
                 className="bg-gray-700 px-3 py-2 rounded-md text-lg text-[1.1rem] font-bold"
                 onClick={() => handleKeyPress(letter)}
-                whileTap={{ scale: .8 }}
+                whileTap={{ scale: 0.8 }}
               >
                 {letter}
               </motion.button>
@@ -276,5 +354,3 @@ const GamePlay = ({ word }: IComponentProps) => {
 };
 
 export default GamePlay;
-
-
