@@ -189,13 +189,13 @@ const GamePlay = ({ word }: IComponentProps) => {
 
       <div className="mt-6 space-y-2">
         {["QWERTYUIOP", "ASDFGHJKL"].map((row, rowIndex) => (
-          <div key={rowIndex} className="flex justify-center gap-1">
+          <div key={rowIndex} className="flex justify-center gap-1 ">
             {row.split("").map((letter) => (
               <motion.button
                 key={letter}
-                className="bg-gray-700 px-3 py-2 rounded-md text-lg font-bold"
+                className="bg-gray-700 px-3 py-2 rounded-md text-lg text-[1.1rem] font-bold"
                 onClick={() => handleKeyPress(letter)}
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ scale: .8 }}
               >
                 {letter}
               </motion.button>
@@ -276,3 +276,5 @@ const GamePlay = ({ word }: IComponentProps) => {
 };
 
 export default GamePlay;
+
+
