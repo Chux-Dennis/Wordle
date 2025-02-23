@@ -22,7 +22,7 @@ const SlideMenu = ({ buttons }: SlideMenuProps) => {
 
   return (
     <motion.div
-      className="flex items-center bg-gray-700 gap-4 p-4 rounded-md font-sf overflow-hidden"
+      className="flex items-center bg-gray-700 gap-4 p-4 rounded-md font-sf overflow-hidden mb-3"
       animate={{ width: isOpen ? "180px" : "50px" }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
