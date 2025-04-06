@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import helper from "../helper";
 import Image from "../assets/image/logo.png";
-import { Tooltip, Modal, Spin } from "antd";
+import { Tooltip, Modal, Spin, Button } from "antd";
 import { Volume2, VolumeX, Stars, LucideMenu } from "lucide-react";
+import Confetti from "react-confetti";
 
-// Import audio files
 import successSound from "../assets/audio/success-sound.mp3";
 import gamePlaySound from "../assets/audio/drum-loop.mp3";
 
@@ -29,8 +29,6 @@ const SlideMenu = ({ buttons }: SlideMenuProps) => {
       <button onClick={() => setIsOpen((prev) => !prev)}>
         <LucideMenu />
       </button>
-
-      {/* AnimatePresence ensures smooth removal when isOpen is false */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -69,14 +67,14 @@ const GamePlay = ({ word }: IComponentProps) => {
   const [aiHint, setAiHint] = useState<string | null>(null);
   const [loadingHint, setLoadingHint] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
-
-  // State to store the screen width
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showWinModal, setShowWinModal] = useState(false); // Changed from showPlayAgainModal
+  const [showLoseModal, setShowLoseModal] = useState(false); // New state for lose condition
   const [screenWidth, setScreenWidth] = useState<number>(window.innerWidth);
 
   const gameAudioRef = useRef<HTMLAudioElement | null>(null);
   const successAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Function to check if the screen width is wider than a given limit
   const screenWidthWiderThan = (widthLimit: number): boolean => {
     return screenWidth > widthLimit;
   };
@@ -104,24 +102,28 @@ const GamePlay = ({ word }: IComponentProps) => {
   }, [currentGuess, attempt, gameOver]);
 
   const handleKeyPress = (letter: string) => {
-    if (currentGuess.length < 5) {
+    if (!gameOver && currentGuess.length < 5) {
       setCurrentGuess((prev) => prev + letter);
     }
   };
 
   const handleEnter = () => {
     if (currentGuess.length === 5 && attempt < 6 && !gameOver) {
-      setGuesses((prev) => {
-        const newGuesses = [...prev];
-        newGuesses[attempt] = currentGuess;
-        return newGuesses;
-      });
+      const newGuesses = [...guesses];
+      newGuesses[attempt] = currentGuess;
+      setGuesses(newGuesses);
 
       if (currentGuess === targetWord) {
         setGameOver(true);
+        setShowConfetti(true);
+        setShowWinModal(true); // Show win modal instead of generic play again
         if (successAudioRef.current) {
           successAudioRef.current.play();
         }
+        setTimeout(() => setShowConfetti(false), 5000);
+      } else if (attempt === 5) {
+        setGameOver(true);
+        setShowLoseModal(true); // Show lose modal
       }
 
       setAttempt((prev) => prev + 1);
@@ -130,7 +132,9 @@ const GamePlay = ({ word }: IComponentProps) => {
   };
 
   const handleBackspace = () => {
-    setCurrentGuess((prev) => prev.slice(0, -1));
+    if (!gameOver) {
+      setCurrentGuess((prev) => prev.slice(0, -1));
+    }
   };
 
   const getTileColor = (char: string, index: number) => {
@@ -168,6 +172,10 @@ const GamePlay = ({ word }: IComponentProps) => {
     setHintUsed(true);
   };
 
+  const handlePlayAgain = () => {
+    window.location.reload(); // Reload the page
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -177,6 +185,17 @@ const GamePlay = ({ word }: IComponentProps) => {
     >
       <audio ref={gameAudioRef} src={gamePlaySound} />
       <audio ref={successAudioRef} src={successSound} />
+
+      {showConfetti && (
+        <Confetti
+          width={screenWidth}
+          height={window.innerHeight}
+          numberOfPieces={200}
+          recycle={false}
+          
+          
+        />
+      )}
 
       {screenWidthWiderThan(600) === true && (
         <>
@@ -192,12 +211,12 @@ const GamePlay = ({ word }: IComponentProps) => {
           <Tooltip title={hintUsed ? "Hint already used" : "Ask AI for help"}>
             <motion.button
               onClick={openHintModal}
-              disabled={hintUsed}
+              disabled={hintUsed || gameOver}
               initial={{ scale: 1 }}
-              animate={hintUsed ? {} : { scale: [1, 1.1, 1] }}
+              animate={hintUsed || gameOver ? {} : { scale: [1, 1.1, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
               className={`absolute top-[5rem] right-5 p-2 rounded-md ${
-                hintUsed
+                hintUsed || gameOver
                   ? "bg-gray-600 cursor-not-allowed"
                   : "bg-gray-800 hover:bg-gray-700"
               }`}
@@ -214,12 +233,12 @@ const GamePlay = ({ word }: IComponentProps) => {
             buttons={[
               <motion.button
                 onClick={openHintModal}
-                disabled={hintUsed}
+                disabled={hintUsed || gameOver}
                 initial={{ scale: 1 }}
-                animate={hintUsed ? {} : { scale: [1, 1.1, 1] }}
+                animate={hintUsed || gameOver ? {} : { scale: [1, 1.1, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
                 className={`p-2 rounded-md ${
-                  hintUsed
+                  hintUsed || gameOver
                     ? "bg-gray-600 cursor-not-allowed"
                     : "bg-gray-800 hover:bg-gray-700"
                 }`}
@@ -228,7 +247,7 @@ const GamePlay = ({ word }: IComponentProps) => {
               </motion.button>,
               <button
                 onClick={toggleSound}
-                className="  bg-gray-800 p-2 rounded-md hover:bg-gray-700"
+                className="bg-gray-800 p-2 rounded-md hover:bg-gray-700"
               >
                 {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
               </button>,
@@ -267,13 +286,14 @@ const GamePlay = ({ word }: IComponentProps) => {
 
       <div className="mt-6 space-y-2">
         {["QWERTYUIOP", "ASDFGHJKL"].map((row, rowIndex) => (
-          <div key={rowIndex} className="flex justify-center gap-1 ">
+          <div key={rowIndex} className="flex justify-center gap-1">
             {row.split("").map((letter) => (
               <motion.button
                 key={letter}
                 className="bg-gray-700 px-3 py-2 rounded-md text-lg text-[1.1rem] font-bold"
                 onClick={() => handleKeyPress(letter)}
                 whileTap={{ scale: 0.8 }}
+                disabled={gameOver}
               >
                 {letter}
               </motion.button>
@@ -282,12 +302,12 @@ const GamePlay = ({ word }: IComponentProps) => {
         ))}
 
         <div className="flex justify-center gap-1">
-          {/* Remove this button on mobile view */}
           {screenWidthWiderThan(600) === true && (
             <motion.button
               className="bg-blue-600 px-6 py-2 rounded-md text-lg font-bold text-white"
               onClick={handleEnter}
               whileTap={{ scale: 0.9 }}
+              disabled={gameOver}
             >
               Enter
             </motion.button>
@@ -299,17 +319,18 @@ const GamePlay = ({ word }: IComponentProps) => {
               className="bg-gray-700 px-3 py-2 rounded-md text-lg font-bold"
               onClick={() => handleKeyPress(letter)}
               whileTap={{ scale: 0.9 }}
+              disabled={gameOver}
             >
               {letter}
             </motion.button>
           ))}
 
-          {/* Remove this button on mobile view */}
           {screenWidthWiderThan(600) === true && (
             <motion.button
               className="bg-red-600 px-6 py-2 rounded-md text-lg font-bold text-white"
               onClick={handleBackspace}
               whileTap={{ scale: 0.9 }}
+              disabled={gameOver}
             >
               ⌫
             </motion.button>
@@ -327,16 +348,50 @@ const GamePlay = ({ word }: IComponentProps) => {
               <p className="text-gray-800 text-lg">{aiHint}</p>
             )}
           </Modal>
+
+          <Modal
+            title="Congratulations!"
+            open={showWinModal}
+            footer={[
+              <Button key="again" type="primary" onClick={handlePlayAgain}>
+                Play Again
+              </Button>,
+              <Button key="close" onClick={() => setShowWinModal(false)}>
+                Close
+              </Button>,
+            ]}
+          >
+            <p className="text-gray-800 text-lg">
+              You guessed the word correctly!
+            </p>
+          </Modal>
+
+          <Modal
+            title="Game Over"
+            open={showLoseModal}
+            footer={[
+              <Button key="again" type="primary" onClick={handlePlayAgain}>
+                Play Again
+              </Button>,
+              <Button key="close" onClick={() => setShowLoseModal(false)}>
+                Close
+              </Button>,
+            ]}
+          >
+            <p className="text-gray-800 text-lg">
+              The word was "{targetWord}". Better luck next time!
+            </p>
+          </Modal>
         </div>
       </div>
 
-      {/* Adding this buttons on  a new line if it is on mobile view */}
       {screenWidthWiderThan(600) === false && (
         <div className="flex mt-3 gap-2">
           <motion.button
             className="bg-blue-600 px-6 py-2 rounded-md text-lg font-bold text-white"
             onClick={handleEnter}
             whileTap={{ scale: 0.9 }}
+            disabled={gameOver}
           >
             Enter
           </motion.button>
@@ -344,6 +399,7 @@ const GamePlay = ({ word }: IComponentProps) => {
             className="bg-red-600 px-6 py-2 rounded-md text-lg font-bold text-white"
             onClick={handleBackspace}
             whileTap={{ scale: 0.9 }}
+            disabled={gameOver}
           >
             ⌫
           </motion.button>
